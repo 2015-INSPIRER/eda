@@ -4,9 +4,9 @@
 --             :
 --  Developers :  Jonas Benjamin Borch - s052435@student.dtu.dk
 --             :
---  Purpose    :  This design contains an entity for the accelerator that must be build
---             :  in task two of the Edge Detection design project. It contains an
---             :  architecture skeleton for the entity as well.
+--  Purpose    :  This design contains an entity for the accelerator that must be
+--             :  build in task two of the Edge Detection design project. It
+--             :  contains an architecture skeleton for the entity as well.
 --             :
 --             :
 --  Revision   :  1.0    7-10-08     Final version
@@ -30,7 +30,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.types.all;
 
-entity acc is
+entity edge_detector_accelerator is
   port (clk    : in  bit_t;             -- The clock.
         reset  : in  bit_t;             -- The reset signal. Active low.
         addr   : out word_t;            -- Address bus for data.
@@ -40,13 +40,13 @@ entity acc is
         rw     : out bit_t;             -- Read/Write signal for data.
         start  : in  bit_t;
         finish : out bit_t);
-end acc;
+end edge_detector_accelerator;
 
 --------------------------------------------------------------------------------
 -- The desription of the accelerator.
 --------------------------------------------------------------------------------
 
-architecture structure of acc is
+architecture structure of edge_detector_accelerator is
 
   type state_type is (idle, read_pixel, invert, write_pixel, complete);
 

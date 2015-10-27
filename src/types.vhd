@@ -65,13 +65,13 @@ package types is
   constant NUM_PIXELS : integer := IMAGE_WIDTH * IMAGE_HEIGHT;
 
   constant READ_START_ADDRESS : word_t :=
-    std_logic_vector(to_unsigned(0, byte_t'length));
+    std_logic_vector(to_unsigned(0, word_t'length));
   constant READ_END_ADDRESS : word_t :=
-    std_logic_vector(to_unsigned(((NUM_PIXELS / 2) - 1), byte_t'length));
+    std_logic_vector(to_unsigned(((NUM_PIXELS / 2) - 1), word_t'length));
   constant WRITE_START_ADDRESS : word_t :=
-    std_logic_vector(to_unsigned(NUM_PIXELS / 2, byte_t'length));
+    std_logic_vector(to_unsigned(NUM_PIXELS / 2, word_t'length));
   constant WRITE_END_ADDRESS : word_t :=
-    std_logic_vector(to_unsigned(NUM_PIXELS - 1, byte_t'length));
+    std_logic_vector(to_unsigned(NUM_PIXELS - 1, word_t'length));
 
 end types;
 
