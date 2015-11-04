@@ -1,45 +1,36 @@
-## ##############################################################
-##
-##	Title		: Compilation and simulation
-##
-##	Developers	: Jens Sparsø and Rasmus Bo Sørensen
-##
-##	Revision	: 02203 fall 2012 v.2
-##
-## This script is meant for compiling the files in the project
-## and starting the simulation
-#################################################################
+quit -sim
 
-# The vlib command creates the work library
-#rm -rf work
-vlib work
+vcom -check_synthesis edge_detector/src/types.vhd
+vcom -check_synthesis edge_detector/src/clock.vhd
+vcom -check_synthesis edge_detector/src/edge_detection_accelerator.vhd
+vcom -check_synthesis edge_detector/src/memory.vhd
 
-# When the work library is already created the vlib command
-# gives a warning, that is OK.
+vcom -check_synthesis edge_detector/tests/edge_detection_accelerator_test.vhd
 
-################################################################
-# The order of the vcom statements is important, the hierachy
-# should be compiled bottom-up.
-# The top most entity should be compiled last.
-# And the components that do not instantiate other components
-# should be compiled first.
-################################################################
+vsim edge_detection_accelerator_test
 
-vcom -quiet types.vhd
-vcom -quiet clock.vhd
-vcom -quiet memory2.vhd
-vcom -quiet acc2.vhd
-vcom -quiet test2.vhd
+restart -force -nowave
 
-# The -quiet option disables output from the vcom command
-# that is not error or warning messages.
+add wave -noupdate -divider -height 25 "Clock and reset"
+add wave -noupdate /edge_detection_accelerator_test/clk
+add wave -noupdate /edge_detection_accelerator_test/reset
 
-################################################################
-# The vsim command starts the testbench design unit and runs
-# the simulation
+add wave -noupdate -divider -height 25 "Edge detector"
+add wave -noupdate /edge_detection_accelerator_test/start
+add wave -noupdate /edge_detection_accelerator_test/req
+add wave -noupdate /edge_detection_accelerator_test/dataR
+add wave -noupdate /edge_detection_accelerator_test/dataW
+add wave -noupdate /edge_detection_accelerator_test/rw
+add wave -noupdate /edge_detection_accelerator_test/finish
 
-vsim testbench
+add wave -noupdate -divider -height 25 "Edge detector internal"
+add wave -noupdate /edge_detection_accelerator_test/i_acc_0/read_addr
+add wave -noupdate /edge_detection_accelerator_test/i_acc_0/write_addr
+add wave -noupdate /edge_detection_accelerator_test/i_acc_0/pixel_in
+add wave -noupdate /edge_detection_accelerator_test/i_acc_0/pixel_out
+add wave -noupdate /edge_detection_accelerator_test/i_acc_0/next_state
+add wave -noupdate /edge_detection_accelerator_test/i_acc_0/state
 
-run 2000 ms
+WaveRestoreZoom {0 ms} {200 ms}
 
-################################################################
+run 200 ms

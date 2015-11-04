@@ -30,7 +30,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.types.all;
 
-entity edge_detector_accelerator is
+entity edge_detection_accelerator is
   port (clk    : in  bit_t;             -- The clock.
         reset  : in  bit_t;             -- The reset signal. Active low.
         addr   : out word_t;            -- Address bus for data.
@@ -40,72 +40,82 @@ entity edge_detector_accelerator is
         rw     : out bit_t;             -- Read/Write signal for data.
         start  : in  bit_t;
         finish : out bit_t);
-end edge_detector_accelerator;
+end edge_detection_accelerator;
 
 --------------------------------------------------------------------------------
 -- The desription of the accelerator.
 --------------------------------------------------------------------------------
 
-architecture structure of edge_detector_accelerator is
+architecture structure of edge_detection_accelerator is
 
-  type state_type is (idle, read_pixel, invert, write_pixel, complete);
+  type state_t is (idle, read_pixel, invert, write_pixel, complete);
 
-  -- All internal signals are defined here
-  signal write_addr : word_t;
-  signal read_addr  : word_t;
+  -- All interanal signals are defined here
+  signal state, next_state : state_t;
 
-  signal pixel_in  : word_t;
-  signal pixel_out : word_t;
+  signal read_addr  : word_t := READ_START_ADDRESS;
+  signal write_addr : word_t := WRITE_START_ADDRESS;
+
+  signal pixel_in  : halfword_t;
+  signal pixel_out : halfword_t;
 
 begin
+
   -- Template for a process
-  fsmd : process(clk, reset)
+  combinatorial_logic : process(start, read_addr, write_addr, state, dataR,
+                                pixel_in, pixel_out)
   begin
     rw <= '1';
+    req <= '1';
+    read_addr <= read_addr;
+    write_addr <= write_addr;
 
-    if reset = '0' then
-      next_state <= idle;
-      read_addr  <= READ_START_ADDRESS;
-      write_addr <= WRITE_START_ADDRESS;
-    elsif clk'event and clk = '1' then
-      next_state <= state;
+    case state is
+      when idle =>
+        req <= '0';
 
-      case state is
-        when idle =>
-          req <= '0';
-
-          if start = '1' then
-            next_state <= read_pixel;
-            req        <= '1';
-          end if;
-        when read_pixel =>
-          pixel_in  <= dataR;
-          read_addr <= read_addr + 1;
-
-          next_state <= invert_pixel;
-        when invert =>
-          pixel_out <= not pixel_in;
-
-          rw         <= '0';
-
-          next_state <= write_pixel;
-        when write_pixel =>
+        if start = '1' then
           next_state <= read_pixel;
-          dataW      <= pixel_out;
-          write_addr <= write_addr + 1;
+          req        <= '1';
+        end if;
+      when read_pixel =>
+        pixel_in  <= dataR;
+        read_addr <= word_t(unsigned(read_addr) + 1);
+        addr <= read_addr;
 
-          if write_addr = WRITE_END_ADDRESS - 1 then
-            next_state <= complete;
-          end if;
-        when complete =>
-          finish <= '1';
-          req    <= '0';
+        next_state <= invert;
+      when invert =>
+        pixel_out <= not pixel_in;
 
-          if start = '0' then
-            next_state <= idle;
-          end if;
-      end case;
+        rw         <= '0';
+
+        next_state <= write_pixel;
+      when write_pixel =>
+        next_state <= read_pixel;
+        dataW      <= pixel_out;
+        write_addr <= word_t(unsigned(write_addr) + 1);
+        addr <= write_addr;
+
+        if write_addr = word_t(unsigned(WRITE_END_ADDRESS) - 1) then
+          next_state <= complete;
+        end if;
+      when complete =>
+        finish <= '1';
+        req    <= '0';
+
+        if start = '0' then
+          next_state <= idle;
+        end if;
+    end case;
+  end process combinatorial_logic;
+
+  state_controller : process(clk, reset)
+  begin
+    if reset = '1' then
+      state <= idle;
+    elsif rising_edge(clk) then
+      state <= next_state;
     end if;
-  end process fsmd;
+  end process state_controller;
 
 end structure;
