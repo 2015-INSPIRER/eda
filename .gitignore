@@ -1,1 +1,4 @@
 copy_task_source.sh
+simulation_results.vcdgz
+edge_detection_accelerator_test
+simu/
