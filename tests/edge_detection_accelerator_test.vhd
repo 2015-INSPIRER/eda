@@ -107,7 +107,7 @@ begin
 
   i_memory_0 : memory
     generic map (mem_size       => 101376*2,  -- 352/2*288 times 2
-                 load_file_name => "edge_detector/res/pic1.pgm16.bits")
+                 load_file_name => "res/pic1.pgm16.bits")
     -- Result is saved to: load_file_name & "_result.pgm"
     port map(clk        => clk,
              addr       => addr,

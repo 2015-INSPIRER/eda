@@ -48,27 +48,29 @@ end edge_detection_accelerator;
 
 architecture structure of edge_detection_accelerator is
 
-  type state_t is (idle, read_pixel, invert, write_pixel, complete);
+  type state_t is (idle, read_pixel, write_pixel, complete);
 
   -- All interanal signals are defined here
   signal state, next_state : state_t;
 
-  signal read_addr  : word_t := READ_START_ADDRESS;
-  signal write_addr : word_t := WRITE_START_ADDRESS;
+  signal read_addr, next_read_addr   : word_t := READ_START_ADDRESS;
+  signal write_addr, next_write_addr : word_t := WRITE_START_ADDRESS;
 
-  signal pixel_in  : halfword_t;
-  signal pixel_out : halfword_t;
+  signal next_pixel, pixel : halfword_t;
 
 begin
 
+  dataW <= not pixel;
+
   -- Template for a process
-  combinatorial_logic : process(start, read_addr, write_addr, state, dataR,
-                                pixel_in, pixel_out)
+  combinatorial_logic : process(start, read_addr, write_addr, state, dataR, pixel)
   begin
-    rw <= '1';
-    req <= '1';
-    read_addr <= read_addr;
-    write_addr <= write_addr;
+    rw              <= '1';
+    req             <= '1';
+    finish          <= '0';
+    next_pixel      <= pixel;
+    next_read_addr  <= read_addr;
+    next_write_addr <= write_addr;
 
     case state is
       when idle =>
@@ -79,22 +81,16 @@ begin
           req        <= '1';
         end if;
       when read_pixel =>
-        pixel_in  <= dataR;
-        read_addr <= word_t(unsigned(read_addr) + 1);
-        addr <= read_addr;
-
-        next_state <= invert;
-      when invert =>
-        pixel_out <= not pixel_in;
-
-        rw         <= '0';
+        next_read_addr <= word_t(unsigned(read_addr) + 1);
+        addr           <= read_addr;
+        next_pixel     <= dataR;
 
         next_state <= write_pixel;
       when write_pixel =>
-        next_state <= read_pixel;
-        dataW      <= pixel_out;
-        write_addr <= word_t(unsigned(write_addr) + 1);
-        addr <= write_addr;
+        next_state      <= read_pixel;
+        next_write_addr <= word_t(unsigned(write_addr) + 1);
+        rw              <= '0';
+        addr            <= write_addr;
 
         if write_addr = word_t(unsigned(WRITE_END_ADDRESS) - 1) then
           next_state <= complete;
@@ -112,9 +108,15 @@ begin
   state_controller : process(clk, reset)
   begin
     if reset = '1' then
-      state <= idle;
+      state      <= idle;
+      pixel      <= (others => '0');
+      read_addr  <= (others => '0');
+      write_addr <= WRITE_START_ADDRESS;
     elsif rising_edge(clk) then
-      state <= next_state;
+      state      <= next_state;
+      pixel      <= next_pixel;
+      read_addr  <= next_read_addr;
+      write_addr <= next_write_addr;
     end if;
   end process state_controller;
 

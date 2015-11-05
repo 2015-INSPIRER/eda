@@ -74,7 +74,3 @@ package types is
     std_logic_vector(to_unsigned(NUM_PIXELS - 1, word_t'length));
 
 end types;
-
-package body types is
-
-end types;

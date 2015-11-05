@@ -19,7 +19,11 @@
 -- -------------------------------------------------------------------------
 
 library ieee;
+
+use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
+use std.textio.all;
+
 use work.types.all;
 
 entity memory is
@@ -28,7 +32,7 @@ entity memory is
            load_file_name : string);    -- File initialisation of the memory
 
   port (clk        : in  std_logic;     -- Read/Write port for Accelerator
-        addr       : in  word_t;
+        addr       : in  word_t := (others => '0');
         dataR      : out halfword_t;
         dataW      : in  halfword_t;
         rw         : in  std_logic;
@@ -36,11 +40,6 @@ entity memory is
         dump_image : in  std_logic);  -- Signal to dump processed image to file
 
 end entity memory;
-
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-use std.textio.all;
 
 architecture behaviour of memory is
   -- Where to store processed image

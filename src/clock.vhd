@@ -28,7 +28,7 @@ architecture behaviour of clock is
 begin
   process
   begin
-    if (not stop = '1') then
+    if stop = '0' then
       clk <= '1', '0' after period/2;
       wait for period;
     else
