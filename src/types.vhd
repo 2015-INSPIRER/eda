@@ -73,4 +73,5 @@ package types is
   constant WRITE_END_ADDRESS : word_t :=
     std_logic_vector(to_unsigned(NUM_PIXELS - 1, word_t'length));
 
+  type SOBEL_MASK is array(5 downto 0) of integer;
 end types;
