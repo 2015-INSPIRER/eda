@@ -10,7 +10,7 @@
 --  Revision   :  1.0  22-08-08  Initial version
 --             :
 --  Special    :
---  thanks to  :  Niels Haandbæk -- c958307@student.dtu.dk
+--  thanks to  :  Niels Haandbï¿½k -- c958307@student.dtu.dk
 --             :  Michael Kristensen - c973396@student.dtu.dk
 --             :  Hans Holten-Lund - hahl@imm.dtu.dk
 --
@@ -58,20 +58,6 @@ package types is
   constant doubleword_one  : doubleword_t := word_one & word_one;
   constant doubleword_x    : doubleword_t := word_x & word_x;
   constant doubleword_z    : doubleword_t := word_z & word_z;
-
-  -- Accelerator constants
-  constant IMAGE_WIDTH : integer := 352;
-  constant IMAGE_HEIGHT : integer := 288;
-  constant NUM_PIXELS : integer := IMAGE_WIDTH * IMAGE_HEIGHT;
-
-  constant READ_START_ADDRESS : word_t :=
-    std_logic_vector(to_unsigned(0, word_t'length));
-  constant READ_END_ADDRESS : word_t :=
-    std_logic_vector(to_unsigned(((NUM_PIXELS / 2) - 1), word_t'length));
-  constant WRITE_START_ADDRESS : word_t :=
-    std_logic_vector(to_unsigned(NUM_PIXELS / 2, word_t'length));
-  constant WRITE_END_ADDRESS : word_t :=
-    std_logic_vector(to_unsigned(NUM_PIXELS - 1, word_t'length));
 
   type SOBEL_MASK is array(5 downto 0) of integer;
 end types;
