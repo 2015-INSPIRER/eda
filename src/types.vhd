@@ -59,5 +59,5 @@ package types is
   constant doubleword_x    : doubleword_t := word_x & word_x;
   constant doubleword_z    : doubleword_t := word_z & word_z;
 
-  type SOBEL_MASK is array(5 downto 0) of integer;
+  type SOBEL_MASK is array(0 to 5) of integer;
 end types;

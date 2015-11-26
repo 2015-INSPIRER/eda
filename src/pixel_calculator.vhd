@@ -21,11 +21,12 @@ architecture structure of pixel_calculator is
           pixel_4 : in  signed(8 downto 0);
           pixel_5 : in  signed(8 downto 0);
           pixel_6 : in  signed(8 downto 0);
-          result  : out signed(8 downto 0));
+          result  : out signed(17 downto 0));
   end component;
 
-  signal D_x, D_y : signed(8 downto 0);
+  signal D_x, D_y : signed(17 downto 0);
 
+  signal pixel_out_tmp : signed(17 downto 0) := (others => '0');
   -- i_sobel_convolutor_0
   signal pixel_1_conv_0, pixel_2_conv_0, pixel_3_conv_0,
     pixel_4_conv_0, pixel_5_conv_0, pixel_6_conv_0 : signed(8 downto 0);
@@ -35,7 +36,15 @@ architecture structure of pixel_calculator is
     pixel_4_conv_1, pixel_5_conv_1, pixel_6_conv_1 : signed(8 downto 0);
 begin
 
-  pixel_out <= byte_t(abs((D_x(7 downto 0))) + abs((D_y(7 downto 0))));
+  pixel_out_tmp <= abs(D_x) + abs(D_y);
+
+  ceil : process(pixel_out_tmp)
+  begin
+    pixel_out <= byte_t(pixel_out_tmp(7 downto 0));
+    if pixel_out_tmp > 255 then
+      pixel_out <= (others => '1');
+    end if;
+  end process;
 
   --Gx constants
   -- [Gx_1 x Gx_2]
@@ -55,7 +64,7 @@ begin
              pixel_3 => pixel_3_conv_0,
              pixel_4 => pixel_4_conv_0,
              pixel_5 => pixel_5_conv_0,
-             pixel_6 => pixel_5_conv_0,
+             pixel_6 => pixel_6_conv_0,
              result  => D_x);
 
   --Gy constants
