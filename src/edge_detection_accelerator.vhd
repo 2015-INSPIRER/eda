@@ -12,10 +12,10 @@
 --  Revision   :  1.0    7-10-08     Final version
 --             :  1.1    8-10-09     Split data line to dataR and dataW
 --             :                     Edgar <s081553@student.dtu.dk>
---             :  1.2   12-10-11     Changed from std_loigc_arith to numeric_std
+--             :  1.2   12-10-11     Changed from std_logic_arith to numeric_std
 --             :
 --  Special    :
---  thanks to  :  Niels Haandbæk -- c958307@student.dtu.dk
+--  thanks to  :  Niels Haandbaek -- c958307@student.dtu.dk
 --             :  Michael Kristensen -- c973396@student.dtu.dk
 --
 -- -----------------------------------------------------------------------------
