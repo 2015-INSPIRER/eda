@@ -60,15 +60,6 @@ architecture structure of edge_detection_accelerator is
           pixel_row : out std_logic_vector(width_g - 1 downto 0));
   end component;
 
-  --component reg is
-  --  generic (width_g : integer);
-  --  port (clk    : in  bit_t;
-  --        reset  : in  bit_t;
-  --        enable : in  bit_t;
-  --        d      : in  std_logic_vector(width_g - 1 downto 0);
-  --        q      : out std_logic_vector(width_g - 1 downto 0));
-  --end component;
-
   component pixel_calculator is
     port (row_1     : in  std_logic_vector(23 downto 0);
           row_2     : in  std_logic_vector(23 downto 0);
@@ -91,6 +82,7 @@ architecture structure of edge_detection_accelerator is
           reset                  : in  bit_t;
           enable                 : in  bit_t;
           pixel_pair             : in  halfword_t;
+          end_of_row : in bit_t;
           addr                   : out word_t;
           data                   : out halfword_t);
   end component;
@@ -104,7 +96,7 @@ architecture structure of edge_detection_accelerator is
   signal enable_pixel_reader_0, enable_pixel_reader_1, enable_pixel_reader_2 : bit_t;
   signal pixel_reader_0_addr, pixel_reader_1_addr, pixel_reader_2_addr       : word_t;
 
-  signal column_count, next_column_count : unsigned(15 downto 0);
+  signal column_count, next_column_count : unsigned(15 downto 0) := to_unsigned(0, 16);
 
   -- Calculation component signals
   signal matrix_row_1, matrix_row_2, matrix_row_3,
@@ -122,6 +114,7 @@ architecture structure of edge_detection_accelerator is
   signal enable_pixel_writer_0  : bit_t;
   signal pixel_writer_0_addr    : word_t;
   signal written_counter, next_written_counter : unsigned(4 downto 0);
+  signal end_of_row_writer : bit_t;
 
 begin
 
@@ -140,11 +133,13 @@ begin
     req    <= '1';
     finish <= '0';
 
+    next_state <= state;
 
     enable_pixel_reader_0  <= '0';
     enable_pixel_reader_1  <= '0';
     enable_pixel_reader_2  <= '0';
     enable_pixel_storage_0 <= '0';
+    end_of_row_writer <= '0';
     next_saved_counter     <= saved_counter;
     enable_pixel_writer_0  <= '0';
     next_written_counter     <= written_counter;
@@ -218,13 +213,18 @@ begin
         rw <= '0';
         req <= '1';
 
-        if pixel_writer_0_addr = word_t(unsigned(WRITE_END_ADDRESS) - 1) then
+        if pixel_writer_0_addr = word_t(unsigned(WRITE_END_ADDRESS)) then
           next_state <= complete;
         elsif written_counter(4) = '1' then
           enable_pixel_writer_0 <= '0';
           next_written_counter     <= (others => '0');
 
           rw  <= '1';
+
+          if column_count = IMAGE_WIDTH then
+            next_column_count <= to_unsigned(2, column_count'length);
+            end_of_row_writer <= '1';
+          end if;
 
           enable_pixel_storage_0 <= '0';
 
@@ -287,30 +287,6 @@ begin
              addr      => pixel_reader_2_addr,
              pixel_row => matrix_row_3);
 
-
-  -- Matrix registers. Pipeline if propagation delay becomes a problem
-  --i_register_0 : reg
-  --  generic map (width_g => MATRIX_WIDTH)
-  --  port map(clk    => clk,
-  --           reset  => reset,
-  --           enable => enable_matrix_reg,
-  --           d      => next_matrix_row_1,
-  --           q      => matrix_row_1);
-  --i_register_1 : reg
-  --  generic map (width_g => MATRIX_WIDTH)
-  --  port map(clk    => clk,
-  --           reset  => reset,
-  --           enable => enable_matrix_reg,
-  --           d      => next_matrix_row_2,
-  --           q      => matrix_row_2);
-  --i_register_2 : reg
-  --  generic map (width_g => MATRIX_WIDTH)
-  --  port map(clk    => clk,
-  --           reset  => reset,
-  --           enable => enable_matrix_reg,
-  --           d      => next_matrix_row_3,
-  --           q      => matrix_row_3);
-
   -- Calculation components 2 pixels per clock cycle
   i_pixel_calculator_0 : pixel_calculator
     port map(row_1 => matrix_row_1(MATRIX_WIDTH - 1 downto
@@ -346,6 +322,7 @@ begin
              reset                  => reset,
              enable                 => enable_pixel_writer_0,
              pixel_pair             => saved_pixel_pair,
+             end_of_row => end_of_row_writer,
              addr                   => pixel_writer_0_addr,
              data                   => dataW);
 
